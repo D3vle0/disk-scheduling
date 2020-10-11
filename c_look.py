@@ -1,6 +1,3 @@
-import json
-with open("./setting.json", "r") as f:
-    data = json.load(f)
 n=int(input("len: "))
 queue=[]
 s=int(input("start value: "))
