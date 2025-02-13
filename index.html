@@ -32,47 +32,48 @@
   </div>
 
   <script>
-    function calculate() {
-      let currentTrack = parseInt(document.getElementById('currentTrack').value);
-      let maxTrack = parseInt(document.getElementById('maxTrack').value);
-      let queue = document.getElementById('queue').value.split(',').map(Number).filter(n => !isNaN(n));
+    const calculate = () => {
+      let currentTrack = parseInt(document.getElementById("currentTrack").value);
+      let maxTrack = parseInt(document.getElementById("maxTrack").value);
+      let queue = document
+        .getElementById("queue")
+        .value.split(",")
+        .map(Number)
+        .filter((n) => !isNaN(n));
       if (isNaN(maxTrack) || isNaN(currentTrack) || queue.length === 0) {
         alert("Please enter valid inputs.");
         return;
       }
-
       function fcfs(currentTrack, queue) {
         let distance = 0;
         let prev = currentTrack;
-        queue.forEach(track => {
+        queue.forEach((track) => {
           distance += Math.abs(track - prev);
           prev = track;
         });
         return distance;
       }
-
       function sstf(currentTrack, queue) {
         let distance = 0;
         let tracks = [...queue];
         let position = currentTrack;
         while (tracks.length > 0) {
-          let closest = tracks.reduce((a, b) => Math.abs(a - position) < Math.abs(b - position) ? a : b);
+          let closest = tracks.reduce((a, b) =>
+            Math.abs(a - position) < Math.abs(b - position) ? a : b
+          );
           distance += Math.abs(closest - position);
           position = closest;
           tracks.splice(tracks.indexOf(closest), 1);
         }
         return distance;
       }
-
-      function scan(currentTrack, queue) {
+      const scan = (currentTrack, queue) => {
         let sorted = [currentTrack, ...queue].sort((a, b) => a - b);
         let index = sorted.indexOf(currentTrack);
         let left = sorted.slice(0, index).reverse();
         let right = sorted.slice(index);
-
         let totalDistance = 0;
         let direction = -1;
-
         while (queue.length > 0) {
           if (direction === -1) {
             if (left.length > 0) {
@@ -88,82 +89,79 @@
               totalDistance += Math.abs(currentTrack - right[0]);
               currentTrack = right.shift();
             } else {
-              totalDistance += (maxTrack - 1 - currentTrack);
+              totalDistance += maxTrack - 1 - currentTrack;
               currentTrack = maxTrack - 1;
               direction = -1;
             }
           }
-          queue = queue.filter(track => track !== currentTrack);
+          queue = queue.filter((track) => track !== currentTrack);
         }
         return totalDistance;
       }
-
-      function c_scan(currentTrack, queue, maxTrack) {
+      const c_scan = (currentTrack, queue, maxTrack) => {
         let totalDistance = 0;
         let tracks = [...queue];
         let current = currentTrack;
-
         if (tracks.length === 0) return 0;
-
         let nearest = tracks.reduce((prev, curr) =>
           Math.abs(curr - current) < Math.abs(prev - current) ? curr : prev
         );
-
-        let direction = nearest < current ? 'left' : 'right';
-
+        let direction = nearest < current ? "left" : "right";
         let sameDirectionTracks = [];
         let oppositeDirectionTracks = [];
-
-        if (direction === 'left') {
-          sameDirectionTracks = tracks.filter(t => t <= current).sort((a, b) => b - a);
-          oppositeDirectionTracks = tracks.filter(t => t > current).sort((a, b) => a - b);
+        if (direction === "left") {
+          sameDirectionTracks = tracks
+            .filter((t) => t <= current)
+            .sort((a, b) => b - a);
+          oppositeDirectionTracks = tracks
+            .filter((t) => t > current)
+            .sort((a, b) => a - b);
         } else {
-          sameDirectionTracks = tracks.filter(t => t >= current).sort((a, b) => a - b);
-          oppositeDirectionTracks = tracks.filter(t => t < current).sort((a, b) => b - a);
+          sameDirectionTracks = tracks
+            .filter((t) => t >= current)
+            .sort((a, b) => a - b);
+          oppositeDirectionTracks = tracks
+            .filter((t) => t < current)
+            .sort((a, b) => b - a);
         }
-
         for (let track of sameDirectionTracks) {
           totalDistance += Math.abs(current - track);
           current = track;
         }
-
-        if (direction === 'left') {
+        if (direction === "left") {
           totalDistance += current;
           totalDistance += maxTrack;
           current = maxTrack;
         } else {
-          totalDistance += (maxTrack - current);
+          totalDistance += maxTrack - current;
           totalDistance += maxTrack;
           current = 0;
         }
-
-        if (direction === 'left') {
-          oppositeDirectionTracks = oppositeDirectionTracks.filter(t => t <= current).sort((a, b) => b - a);
+        if (direction === "left") {
+          oppositeDirectionTracks = oppositeDirectionTracks
+            .filter((t) => t <= current)
+            .sort((a, b) => b - a);
         } else {
-          oppositeDirectionTracks = oppositeDirectionTracks.filter(t => t >= current).sort((a, b) => a - b);
+          oppositeDirectionTracks = oppositeDirectionTracks
+            .filter((t) => t >= current)
+            .sort((a, b) => a - b);
         }
-
         for (let track of oppositeDirectionTracks) {
           totalDistance += Math.abs(current - track);
           current = track;
         }
-
         return totalDistance;
       }
-
-      function look(currentTrack, queue) {
+      const look = (currentTrack, queue) => {
         let direction = -1;
         let totalDistance = 0;
         let current = currentTrack;
         let localQueue = [...queue];
-
         localQueue.sort((a, b) => a - b);
-
         while (localQueue.length > 0) {
           let nextTrack = -1;
-
           if (direction === -1) {
-            let left = localQueue.filter(track => track <= current);
+            let left = localQueue.filter((track) => track <= current);
             if (left.length > 0) {
               nextTrack = Math.max(...left);
             } else {
@@ -171,9 +169,8 @@
               continue;
             }
           }
-
           if (direction === 1) {
-            let right = localQueue.filter(track => track >= current);
+            let right = localQueue.filter((track) => track >= current);
             if (right.length > 0) {
               nextTrack = Math.min(...right);
             } else {
@@ -181,73 +178,60 @@
               continue;
             }
           }
-
           totalDistance += Math.abs(nextTrack - current);
           current = nextTrack;
           localQueue.splice(localQueue.indexOf(nextTrack), 1);
         }
-
         return totalDistance;
       }
-
-      function c_look(currentTrack, queue) {
+      const c_look = (currentTrack, queue) => {
         if (queue.length === 0) return 0;
-
         let totalDistance = 0;
         let current = currentTrack;
         const tracks = [...queue];
-
         const nearest = tracks.reduce((a, b) =>
           Math.abs(b - current) < Math.abs(a - current) ? b : a
         );
-        const direction = nearest < current ? 'left' : 'right';
-
+        const direction = nearest < current ? "left" : "right";
         let sameDir, oppositeDir;
-        if (direction === 'left') {
-          sameDir = tracks.filter(t => t <= current).sort((a, b) => b - a);
-          oppositeDir = tracks.filter(t => t > current).sort((a, b) => b - a);
+        if (direction === "left") {
+          sameDir = tracks.filter((t) => t <= current).sort((a, b) => b - a);
+          oppositeDir = tracks.filter((t) => t > current).sort((a, b) => b - a);
         } else {
-          sameDir = tracks.filter(t => t >= current).sort((a, b) => a - b);
-          oppositeDir = tracks.filter(t => t < current).sort((a, b) => a - b);
+          sameDir = tracks.filter((t) => t >= current).sort((a, b) => a - b);
+          oppositeDir = tracks.filter((t) => t < current).sort((a, b) => a - b);
         }
-
         for (const track of sameDir) {
           totalDistance += Math.abs(current - track);
           current = track;
         }
-
         if (oppositeDir.length > 0) {
           totalDistance += Math.abs(current - oppositeDir[0]);
           current = oppositeDir[0];
-
           for (let i = 1; i < oppositeDir.length; i++) {
             totalDistance += Math.abs(current - oppositeDir[i]);
             current = oppositeDir[i];
           }
         }
-
         return totalDistance;
       }
-
-      let results = document.getElementById('results');
-      results.innerHTML = '';
+      let results = document.getElementById("results");
+      results.innerHTML = "";
       let algorithms = {
-        "FCFS": fcfs(currentTrack, queue),
-        "SSTF": sstf(currentTrack, queue),
-        "SCAN": scan(currentTrack, queue),
+        FCFS: fcfs(currentTrack, queue),
+        SSTF: sstf(currentTrack, queue),
+        SCAN: scan(currentTrack, queue),
         "C-SCAN": c_scan(currentTrack, queue, maxTrack),
-        "LOOK": look(currentTrack, queue),
+        LOOK: look(currentTrack, queue),
         "C-LOOK": c_look(currentTrack, queue)
       };
-
       for (let [name, distance] of Object.entries(algorithms)) {
-        let li = document.createElement('li');
+        let li = document.createElement("li");
         li.className = "list-group-item";
         li.textContent = `${name}: ${distance} head movements`;
         results.appendChild(li);
       }
     }
-
   </script>
 </body>
 
